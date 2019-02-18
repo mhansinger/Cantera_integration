@@ -1,0 +1,6 @@
+# gitignore
+
+*.h5
+*.csv
+*.txt 
+
