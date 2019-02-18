@@ -29,10 +29,11 @@ class Cantera_Reactor_Sandia(object):
         self.species_names = self.gas.species_names
         self.species_dict = { row : self.gas.species_index(row) for row in self.gas.species_names }
         self.T_ref = 298.15     # reference temperature for enthalpy
-        self.reactor = ct.IdealGasReactor(self.gas)
-        self.sim = ct.ReactorNet([self.reactor])
+        #self.reactor = ct.IdealGasReactor(self.gas)
+        #self.sim = ct.ReactorNet([self.reactor])
 
         self.data_integrated = None
+        self.dt = 1e-6
 
 
     def read_data(self,path='/home/max/HDD2_Data/OF4_Simulations/Sandia/Sandia_Database/'):
@@ -59,11 +60,43 @@ class Cantera_Reactor_Sandia(object):
         self.columns_out.append('dt')
         self.columns_out.append('heatRelease_after')
 
-        temp_np = np.zeros(self.Sandia_database_org.shape[0],len(self.columns_out))
+        temp_np = np.zeros((self.Sandia_database_org.shape[0],len(self.columns_out)))
 
         temp_pd = pd.DataFrame(temp_np,columns=self.columns_out)
 
         self.data_integrated = pd.concat([self.Sandia_database_org,temp_pd],axis=1)
 
+
+    def integrate(self,iloc):
+
+        this_df = self.Sandia_database_org.iloc[iloc]
+
+        this_Y = []
+        for n in self.species_names:
+            this_Y.append(this_df[n])
+
+        this_TPY = this_df['T'], this_df['p'], this_Y
+
+        self.gas.TPY = this_TPY
+
+        # create reactor
+        reactor = ct.IdealGasConstPressureReactor(self.gas)
+        sim = ct.ReactorNet([reactor])
+
+        # advance in time
+        sim.advance(self.dt)
+
+        # return reactor object
+        return reactor
+
+
+
+
+
+if __name__ == '__main__':
+    myReact = Cantera_Reactor_Sandia()
+    myReact.set_tables()
+
+    reactor = myReact.integrate(iloc=0)
 
 
