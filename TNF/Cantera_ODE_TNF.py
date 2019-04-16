@@ -5,7 +5,7 @@ This is to integrate chemical states based on given Y,T,P data
 
 @author: mhansinger
 
-last modified: 10.4.2019
+last modified: 16.4.2019
 
 PYTHON3.5 !!!
 '''
@@ -144,14 +144,17 @@ class Cantera_ODE_TNF(object):
 
             # CRITERIA TO REMOVE UNNECESSARY ENTRIES WHERE T IS AT T=300
             if this_T > remove_T_below:
-                ###############################
-                # ODE integration
-                T_after, Y_after, R_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm)
-                ###############################
+                try:
+                    ###############################
+                    # ODE integration
+                    T_after, Y_after, R_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm)
+                    ###############################
 
-                this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, R_Y, this_f_Bilger))
+                    this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, R_Y, this_f_Bilger))
+                    self.data_integrated_np[idx_fullset, :] = this_out_vector
 
-                self.data_integrated_np[idx_fullset, :] = this_out_vector
+                except:
+                    print('Error in integration')
 
         self.data_integrated=pd.DataFrame(data=self.data_integrated_np,columns=self.columns_out)
 
