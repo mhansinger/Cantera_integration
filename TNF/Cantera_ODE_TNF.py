@@ -51,18 +51,19 @@ class Cantera_ODE_TNF(object):
         self.TNF_database_org = None
         print('Time step is: %f' % self.dt)
 
-    def read_data(self,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
+    def read_data(self,name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
 
-        self.TNF_data_path = join(path,'TNF_states.h5')
+        self.TNF_data_path = join(path,name)
         self.TNF_database_org=pd.read_hdf(self.TNF_data_path)
 
         print('These are the data features:')
         print(self.TNF_database_org.columns)
 
-    def read_data_dd(self,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
+    def read_data_dd(self, name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
 
-        self.TNF_data_path = join(path,'TNF_states.h5',)
-        self.TNF_database_org=dd.read_hdf(self.TNF_data_path,key='TNF_raw_data')
+        self.TNF_data_path = join(path, name)
+        self.TNF_database_org=dd.read_hdf(self.TNF_data_path, key='TNF_raw_data')
+
 
         print('These are the data features:')
         print(self.TNF_database_org.columns)
@@ -75,9 +76,10 @@ class Cantera_ODE_TNF(object):
         #self.plot_histograms('CO2')
         #self.plot_histograms('CH4')
 
-    def set_tables(self):
+    def set_tables(self,name):
         print('reading in tables ...')
-        self.read_data_dd()
+        #self.read_data(name=name)
+        self.read_data_dd(name=name)
 
         print('setting up the output tables ...')
 
@@ -87,24 +89,20 @@ class Cantera_ODE_TNF(object):
         self.columns_out_after = [n+'_after' for n in self.species_names]
         self.columns_out_after.append('T_after')
         # reaction rate [1/s]
-
         self.columns_R = ['R_'+n for n in self.species_names]
         self.columns_out = self.columns_out + self.columns_out_after +self.columns_R
 
         self.columns_out.append('f_Bilger')
-        #self.columns_out.append('dt')
 
         self.len_dataset = len(self.TNF_database_org)
 
         self.data_integrated_np = np.zeros((self.len_dataset,len(self.columns_out)))
 
-        #self.data_integrated = pd.DataFrame(columns=self.columns_out)
-        #self.data_integrated = pd.concat([self.TNF_database_org,temp_pd],axis=1)
         print('Output data set columns:')
         print(self.columns_out)
 
 
-    def ODE_integrate(self,Y,T,p):
+    def ODE_integrate(self,Y,T,p,steps):
         # do the ODE integration
         # Y is the species vector, T temperature, p pressure
         #self.gas = ct.Solution('utils/lu19.cti')
@@ -114,18 +112,18 @@ class Cantera_ODE_TNF(object):
         time = 0.0
 
         # do 10 small integration steps to get to dt! --> makes it less stiff
-        for n in range(10):
-            time += self.dt/10
+        for n in range(steps):
+            time += self.dt/steps
             sim.advance(time)
 
         T_after = r.thermo.T
         Y_after = r.thermo.Y
-        R_Y = (Y_after - Y) * self.dt # mass fraction reaction rate dY/dt [1/s]
+        R_Y = (Y_after - Y) / self.dt # mass fraction reaction rate dY/dt [1/s]
 
         return T_after, Y_after, R_Y
 
 
-    def loop_ODE(self,remove_T_below):
+    def loop_ODE(self,remove_T_below,steps):
         print(' ')
         #for row in tqdm(range(self.len_dataset)):
         for idx_fullset, this_set in tqdm(self.TNF_database_org.iterrows()):
@@ -147,7 +145,7 @@ class Cantera_ODE_TNF(object):
                 try:
                     ###############################
                     # ODE integration
-                    T_after, Y_after, R_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm)
+                    T_after, Y_after, R_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm,steps=steps)
                     ###############################
 
                     this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, R_Y, this_f_Bilger))
@@ -161,11 +159,11 @@ class Cantera_ODE_TNF(object):
         # write database
         self.write_hdf()
 
-    def write_hdf(self):
+    def write_hdf(self,nameDB):
         hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%f' % self.dt))
 
         # update the hdf5 database
-        hdf_database.append('TNF_data_integrated', self.data_integrated)
+        hdf_database.append(nameDB, self.data_integrated)
         hdf_database.close()
 
         # self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%f' % self.dt))
@@ -188,9 +186,9 @@ class Cantera_ODE_TNF(object):
 
 if __name__ == '__main__':
     myReact = Cantera_ODE_TNF()
-    myReact.set_tables()
-    myReact.loop_ODE(remove_T_below=310)
-    myReact.write_hdf()
+    myReact.set_tables(name='TNF_states.h5')
+    myReact.loop_ODE(remove_T_below=310,steps=1)
+    myReact.write_hdf(nameDB='TNF_data_integrated.h5')
     # myReact.integrate_Ode(1000)
 
     #reactor = myReact.integrate_cantera(iloc=0)
