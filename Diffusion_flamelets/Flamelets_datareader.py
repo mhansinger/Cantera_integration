@@ -18,7 +18,7 @@ from utils.compute_fBilger import compute_fBilger
 import os
 import cantera as ct
 
-out_filename = 'Flamelets_states.h5'
+out_filename = 'Flamelet_states.h5'
 
 gas = ct.Solution('utils/lu19.cti')
 
@@ -31,7 +31,7 @@ all_fields = species_lu19 + thermo_fields
 # create DF for all the states in all Flames and time steps
 Data_all_df = pd.DataFrame(columns=all_fields)
 
-store_path = '/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/Flamelets_database'
+store_path = '/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/Diffusion_flamelets_database'
 
 path_fine= '/home/max/HDD2_Data/OF4_Simulations/DiffusionFlames/diffusion_lu19_dataGen_fine'
 path_normal= '/home/max/HDD2_Data/OF4_Simulations/DiffusionFlames/diffusion_lu19_dataGen'
@@ -47,14 +47,13 @@ fine_cases = [join(path_fine,c) for c in fine_dirs]
 normal_cases = [join(path_normal,c) for c in normal_dirs]
 
 All_cases = fine_cases+normal_cases
+# print(All_cases)
 
 for case in All_cases:
     thisFlame_path = case
 
     # get the time steps
     dirs = os.listdir(thisFlame_path)
-
-    #print(dirs)
 
     timesteps = [d for d in dirs if (d.startswith('0.') or d.endswith('e-06') or d.endswith('e-05'))]
 
@@ -97,23 +96,25 @@ for case in All_cases:
         this_df['f_Bilger'] = f_Bilger
 
 
-        print(' ')
-        print(this_df.head())
-        print('  ')
+        # print(' ')
+        # print(this_df.head())
+        # print('  ')
 
-        if PV_FLAG:
-            PV_max = max(this_df['PV'])
+        # if PV_FLAG:
+        #     PV_max = max(this_df['PV'])
 
         # CLEAN THE DF!
         # remove all values above f=0.2 --> there is no reaction!
         if f_Bilger_FLAG:
             this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.20, sample_size=1)
             this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=1)
+        else:
+            this_clean_df = this_df
 
-        if PV_FLAG:
-            # Clean PV: 0 there is no reaction, PV_max: reaction is finished
-            this_clean_df = clean_states_above(df=this_df, species='PV', threshold=0.98 * PV_max, sample_size=10000)
-            this_clean_df = clean_states_below(df=this_df, species='PV', threshold=1e-8, sample_size=10000)
+        # if PV_FLAG:
+        #     # Clean PV: 0 there is no reaction, PV_max: reaction is finished
+        #     this_clean_df = clean_states_above(df=this_df, species='PV', threshold=0.98 * PV_max, sample_size=10000)
+        #     this_clean_df = clean_states_below(df=this_df, species='PV', threshold=1e-8, sample_size=10000)
 
         print('\nData set contains %i entries\n' % len(this_clean_df))
         # append the data to Data_all_df

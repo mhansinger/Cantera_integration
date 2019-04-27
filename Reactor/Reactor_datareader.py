@@ -18,7 +18,7 @@ from utils.compute_fBilger import compute_fBilger
 import os
 import cantera as ct
 
-out_filename = 'Reactor_states.h5'
+out_filename = 'Reactor_states_2.h5'
 
 gas = ct.Solution('utils/lu19.cti')
 
@@ -89,27 +89,6 @@ for case in cases:
         #print('f_Bilger: ',f_Bilger)
         this_df['f_Bilger'] = f_Bilger
 
-
-
-        # print(' ')
-        # print(this_df.head())
-        # print('  ')
-
-        # if PV_FLAG:
-        #     PV_max = max(this_df['PV'])
-
-        # # CLEAN THE DF!
-        # # remove all values above f=0.2 --> there is no reaction!
-        # if f_Bilger_FLAG:
-        #     this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.20, sample_size=1)
-        #     this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=1)
-        #
-        # if PV_FLAG:
-        #     # Clean PV: 0 there is no reaction, PV_max: reaction is finished
-        #     this_clean_df = clean_states_above(df=this_df, species='PV', threshold=0.98 * PV_max, sample_size=10000)
-        #     this_clean_df = clean_states_below(df=this_df, species='PV', threshold=1e-8, sample_size=10000)
-
-        # print('\nData set contains %i entries\n' % len(this_clean_df))
         # append the data to Data_all_df
         Data_all_df = Data_all_df.append(this_df, ignore_index=True)
 

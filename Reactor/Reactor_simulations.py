@@ -27,14 +27,14 @@ source_dir = '/home/max/HDD2_Data/OF4_Simulations/CanteraIgnition/DataGeneration
 
 base_dir_name = 'Lu19_f'
 
-solver = 'canteraOnlyReactingFoam'
+solver = 'canteraRhoReactingFoam'
 
 lu_19_species = ['C2H2', 'C2H4', 'C2H6', 'CH2CO', 'CH2O', 'CH3', 'CH3OH', 'CH4','CO', 'CO2', 'H', 'H2', 'H2O', 'H2O2', 'HO2', 'N2', 'O', 'O2', 'OH']
 
-T_start = 1100
+T_start = 1000
 
 #range of scalar dissipation rates
-f_range=np.linspace(0.005,0.3,150)
+f_range=np.linspace(0.01,0.2,150)
 
 os.chdir(main_dir)
 
