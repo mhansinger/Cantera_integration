@@ -120,7 +120,7 @@ class Cantera_ODE_Reactor(object):
 
         T_after = r.thermo.T
         Y_after = r.thermo.Y
-        R_Y = (Y_after - Y) / self.dt # mass fraction reaction rate dY/dt [1/s]
+        R_Y = (Y_after - Y) #/ self.dt # mass fraction reaction rate dY/dt [1/s]
 
         return T_after, Y_after, R_Y
 
