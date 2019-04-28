@@ -17,7 +17,7 @@ import cantera as ct
 from os.path import join
 import os
 from tqdm import tqdm
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from numba import jit
 
 # import scipy.integrate
@@ -69,13 +69,13 @@ class Cantera_ODE_Reactor(object):
         print('These are the data features:')
         print(self.Reactor_database_org.columns)
 
-        # plot some histograms
-        self.plot_histograms('T')
-        self.plot_histograms('CO')
-        self.plot_histograms('f_Bilger')
-        self.plot_histograms('OH')
-        self.plot_histograms('CO2')
-        self.plot_histograms('CH4')
+        # # plot some histograms
+        # self.plot_histograms('T')
+        # self.plot_histograms('CO')
+        # self.plot_histograms('f_Bilger')
+        # self.plot_histograms('OH')
+        # self.plot_histograms('CO2')
+        # self.plot_histograms('CH4')
 
     #@jit(parallel=True)
     def set_tables(self,name):
@@ -174,20 +174,20 @@ class Cantera_ODE_Reactor(object):
 
         # self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/Reactor_database','Reactor_integrated_dt%f' % self.dt))
 
-    def plot_histograms(self,species):
-        this_set = self.Reactor_database_org[species].compute()
-
-        if species=='T':
-            this_set = this_set[this_set>310]
-            plt.figure()
-            plt.hist(this_set,bins=100)
-            plt.title(species)
-            plt.show(block=False)
-        else:
-            plt.figure()
-            plt.hist(this_set,bins=100)
-            plt.title(species)
-            plt.show(block=False)
+    # def plot_histograms(self,species):
+    #     this_set = self.Reactor_database_org[species].compute()
+    #
+    #     if species=='T':
+    #         this_set = this_set[this_set>310]
+    #         plt.figure()
+    #         plt.hist(this_set,bins=100)
+    #         plt.title(species)
+    #         plt.show(block=False)
+    #     else:
+    #         plt.figure()
+    #         plt.hist(this_set,bins=100)
+    #         plt.title(species)
+    #         plt.show(block=False)
 
 
 if __name__ == '__main__':
