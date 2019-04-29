@@ -91,9 +91,16 @@ for case in All_cases:
         # compute fBilger
         Y = this_df[species_lu19].values
         #print('Y.shape', Y.shape)
-        f_Bilger = compute_fBilger(Y)
+
+        try:
+            f_Bilger = compute_fBilger(Y)
+            this_df['f_Bilger'] = f_Bilger
+        except Exception as e:
+            print('Could not compute f_Bilger because of %s' % str(e))
+            this_df['f_Bilger'] = 0
+
         #print('f_Bilger: ',f_Bilger)
-        this_df['f_Bilger'] = f_Bilger
+
 
 
         # print(' ')

@@ -166,7 +166,7 @@ class Cantera_ODE_Reactor(object):
         #self.write_hdf()
 
     def write_hdf(self,nameDB):
-        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/Reactor_database','Reactor_integrated_dt%f.h5' % self.dt))
+        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/Reactor_database','Reactor_integrated_2_dt%f.h5' % self.dt))
 
         # update the hdf5 database
         hdf_database.append(nameDB, self.data_integrated)
@@ -192,8 +192,8 @@ class Cantera_ODE_Reactor(object):
 
 if __name__ == '__main__':
     myReact = Cantera_ODE_Reactor()
-    myReact.set_tables(name='Reactor_states.h5')
-    myReact.loop_ODE(remove_T_below=1140,steps=1)
+    myReact.set_tables(name='Reactor_states_2.h5')
+    myReact.loop_ODE(remove_T_below=1000,steps=1)
     myReact.write_hdf(nameDB='Reactor_data_integrated')
     # myReact.integrate_Ode(1000)
 
