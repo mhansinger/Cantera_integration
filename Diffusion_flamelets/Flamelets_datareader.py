@@ -113,8 +113,8 @@ for case in All_cases:
         # CLEAN THE DF!
         # remove all values above f=0.2 --> there is no reaction!
         if f_Bilger_FLAG:
-            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.20, sample_size=1)
-            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=1)
+            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.20, sample_size=0)
+            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=0)
         else:
             this_clean_df = this_df
 
