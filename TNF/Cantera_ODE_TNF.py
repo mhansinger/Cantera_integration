@@ -107,7 +107,7 @@ class Cantera_ODE_TNF(object):
         # Y is the species vector, T temperature, p pressure
         #self.gas = ct.Solution('utils/lu19.cti')
         self.gas.TPY = T, p, Y
-        current_rho = self.gas.D
+        current_rho = self.gas.density
         r = ct.IdealGasConstPressureReactor(self.gas)
         sim = ct.ReactorNet([r])
         time = 0.0
