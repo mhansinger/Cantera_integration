@@ -89,8 +89,8 @@ class Cantera_ODE_TNF(object):
         self.columns_out_after = [n+'_after' for n in self.species_names]
         self.columns_out_after.append('T_after')
         # reaction rate [1/s]
-        self.columns_R = ['R_'+n for n in self.species_names]
-        self.columns_out = self.columns_out + self.columns_out_after +self.columns_R
+        self.columns_RR = ['RR_'+n for n in self.species_names]
+        self.columns_out = self.columns_out + self.columns_out_after +self.columns_RR
 
         self.columns_out.append('f_Bilger')
 
@@ -107,6 +107,7 @@ class Cantera_ODE_TNF(object):
         # Y is the species vector, T temperature, p pressure
         #self.gas = ct.Solution('utils/lu19.cti')
         self.gas.TPY = T, p, Y
+        current_rho = self.gas.D
         r = ct.IdealGasConstPressureReactor(self.gas)
         sim = ct.ReactorNet([r])
         time = 0.0
@@ -118,9 +119,9 @@ class Cantera_ODE_TNF(object):
 
         T_after = r.thermo.T
         Y_after = r.thermo.Y
-        R_Y = (Y_after - Y) / self.dt # mass fraction reaction rate dY/dt [1/s]
+        RR_Y = (Y_after - Y) * current_rho / self.dt # mass fraction reaction rate dY/dt [1/s] same as in Cantera OF
 
-        return T_after, Y_after, R_Y
+        return T_after, Y_after, RR_Y
 
 
     def loop_ODE(self,remove_T_below,steps):
@@ -145,10 +146,10 @@ class Cantera_ODE_TNF(object):
                 try:
                     ###############################
                     # ODE integration
-                    T_after, Y_after, R_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm,steps=steps)
+                    T_after, Y_after, RR_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm,steps=steps)
                     ###############################
 
-                    this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, R_Y, this_f_Bilger))
+                    this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, RR_Y, this_f_Bilger))
                     self.data_integrated_np[idx_fullset, :] = this_out_vector
 
                 except:
