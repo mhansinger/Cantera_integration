@@ -34,7 +34,7 @@ lu_19_species = ['C2H2', 'C2H4', 'C2H6', 'CH2CO', 'CH2O', 'CH3', 'CH3OH', 'CH4',
 T_start = 1000
 
 #range of scalar dissipation rates
-f_range=np.linspace(0.01,0.2,150)
+f_range=np.linspace(0.02,0.15,150)
 
 os.chdir(main_dir)
 
