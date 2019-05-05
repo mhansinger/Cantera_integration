@@ -23,11 +23,15 @@ import Ofpp
 
 
 # parent directory
-main_dir = '/home/max/HDD2_Data/OF4_Simulations/CanteraIgnition/DataGeneration/IgniteLu19/Cases'
+main_dir = '/home/max/HDD2_Data/OF4_Simulations/CanteraIgnition/DataGeneration/IgniteLu19/Cases_variation'
+
+#create directory if not exist
+if not os.path.exists(main_dir):
+    os.makedirs(main_dir)
 
 source_dir = '/home/max/HDD2_Data/OF4_Simulations/CanteraIgnition/DataGeneration/IgniteLu19/source_files'
 
-base_dir_name = 'Lu19_var_f'
+base_dir_name = 'Lu19_f'
 
 solver = 'canteraRhoReactingFoam'
 
