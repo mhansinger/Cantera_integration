@@ -1,4 +1,4 @@
-# read in the Sandia states from OF simulations and Lu19 mechanism
+# read in the TNF states from OF simulations and Lu19 mechanism
 # @author: mhanisnger
 
 # last change: 11.3.19
