@@ -37,9 +37,9 @@ path_fine= '/home/max/HDD2_Data/OF4_Simulations/DiffusionFlames/diffusion_lu19_d
 path_normal= '/home/max/HDD2_Data/OF4_Simulations/DiffusionFlames/diffusion_lu19_dataGen'
 
 fine_dirs = os.listdir(path_fine)
-normal_dirs = os.listdir(path_normal)
+#normal_dirs = os.listdir(path_normal)
 
-#filter the directory names
+filter the directory names
 fine_dirs = [d for d in fine_dirs if d.startswith('diff_lu19')]
 normal_dirs = [d for d in normal_dirs if d.startswith('diff_lu19')]
 
@@ -49,7 +49,7 @@ normal_cases = [join(path_normal,c) for c in normal_dirs]
 All_cases = fine_cases+normal_cases
 # print(All_cases)
 
-for case in All_cases:
+for case in fine_cases:
     thisFlame_path = case
 
     # get the time steps

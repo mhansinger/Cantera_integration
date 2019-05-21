@@ -3,8 +3,8 @@
 Created on Tue Nov 17 17:19:24 2015
 Premixed freely propagating flame
 Adiabatic
-Table generation TNF workshop (Methane-Air, 1 bar)
-@author: julian & hagen
+Table generation Sandia flames (Ch4 + air)
+@author: mhansinger
 """
 import cantera as ct
 import numpy as np
@@ -14,15 +14,16 @@ from write_full_csv import write_full_csv
 # Operating conditions
 p = 1e5 # operating pressure [Pa]
 Tin = 300 # inlet temperature unburnt gas [K]
-yF1 = 1 # fuel
+
 yO2 = 0.232 # oxidizer
+yF1 = 0.75 # fuel
 
 # Parameters#
 nf = 751 # number of flames to be computed
 nu_st = 4 # stoichiometric 
 LFL = 0.055 # lower flammability limit CH4 mass fraction
 UFL = 0.205 # upper flammability limit CH4 mass fraction
-yFuel = np.linspace(LFL, UFL, nf) # Define YFuel within flammability limits
+yFuel = np.linspace(LFL, U FL, nf) # Define YFuel within flammability limits
 
 # Initial grid
 #initial_grid = [0.0,0.0001, 0.001, 0.01, 0.015, 0.02, 0.029,0.02999, 0.03]
