@@ -79,7 +79,7 @@ class Cantera_ODE_Reactor(object):
         # self.plot_histograms('CO2')
         # self.plot_histograms('CH4')
 
-    #@jit(parallel=True)
+
     def set_tables(self,name):
         print('reading in tables ...')
         #self.read_data(name=name)
@@ -105,7 +105,7 @@ class Cantera_ODE_Reactor(object):
         print('Output data set columns:')
         print(self.columns_out)
 
-    @jit(parallel=True)
+
     def ODE_integrate(self,Y,T,p,steps):
         # do the ODE integration
         # Y is the species vector, T temperature, p pressure
@@ -127,7 +127,7 @@ class Cantera_ODE_Reactor(object):
 
         return T_after, Y_after, RR_Y
 
-    #@jit(parallel=True)
+
     def loop_ODE(self,remove_T_below,steps):
         print(' ')
         #for row in tqdm(range(self.len_dataset)):

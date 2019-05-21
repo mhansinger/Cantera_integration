@@ -43,7 +43,7 @@ T_start = 1000
 t_end = 0.0001
 
 #range of scalar dissipation rates
-f_range=np.linspace(0.015,0.15,50)
+f_range=np.linspace(0.03,0.1,50)
 
 os.chdir(main_dir)
 
@@ -73,8 +73,8 @@ for f in f_range:
     print()
 
 
-    y_H = np.random.random(1)[0]*1e-6
-    y_CO = np.random.random(1)[0]*1e-3
+    y_H = np.random.random(1)[0]*1e-8
+    y_CO = np.random.random(1)[0]*1e-6
 
     # adjust other species
     y_O2 = (1 - f) * 0.2315 - y_CO/2
