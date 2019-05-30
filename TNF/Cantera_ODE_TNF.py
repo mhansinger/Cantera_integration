@@ -158,7 +158,7 @@ class Cantera_ODE_TNF(object):
         self.data_integrated=pd.DataFrame(data=self.data_integrated_np,columns=self.columns_out)
 
         # write database
-        self.write_hdf()
+        # self.write_hdf()
 
     def write_hdf(self,nameDB):
         hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
