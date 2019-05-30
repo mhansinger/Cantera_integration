@@ -68,7 +68,8 @@ for case in TNF_path_DNS:
                 f_Bilger_FLAG = False
 
             if os.path.exists(current_path):
-                this_df[column] = pd.read_csv(current_path, compression='gzip',names=[column]) #Ofpp.parse_internal_field(current_path)  # column is also the field name here
+                data = pd.read_csv(current_path, compression='gzip',names=[column])[column] #Ofpp.parse_internal_field(current_path)  # column is also the field name here
+                this_df[column] = data.values
             else:
                 #raise FileNotFoundError
                 print('%s Not Found!' % column)

@@ -45,11 +45,11 @@ class Cantera_ODE_TNF(object):
         self.data_integrated = None
 
         #dt = input('Chose a dt in ms for the integration:')
-        self.dt = 1e-6
+        self.dt = 1e-7
         self.P = 101325
         self.len_dataset = None
         self.TNF_database_org = None
-        print('Time step is: %f' % self.dt)
+        print('Time step is: %s' % str(self.dt))
 
     def read_data(self,name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
 
@@ -161,13 +161,13 @@ class Cantera_ODE_TNF(object):
         self.write_hdf()
 
     def write_hdf(self,nameDB):
-        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%f' % self.dt))
+        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
 
         # update the hdf5 database
         hdf_database.append(nameDB, self.data_integrated)
         hdf_database.close()
 
-        # self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%f' % self.dt))
+        self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
 '''
     def plot_histograms(self,species):
         this_set = self.TNF_database_org[species].compute()
