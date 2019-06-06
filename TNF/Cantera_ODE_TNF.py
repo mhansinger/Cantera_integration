@@ -167,7 +167,7 @@ class Cantera_ODE_TNF(object):
 
         all_indexes = self.data_integrated.index.tolist()
 
-        remove_list = self.data_integrated.index[abs(self.data_integrated) > threshold].tolist()
+        remove_list = self.data_integrated.index[abs(self.data_integrated[condition]) > threshold].tolist()
 
         ratio = len(remove_list) / len(all_indexes)
         print('ratio values to remove: ', ratio)
