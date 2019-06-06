@@ -85,8 +85,8 @@ for case in TNF_path_DNS:
         # CLEAN THE DF!
         # remove all values above f=0.2 --> there is no reaction!
         if f_Bilger_FLAG:
-            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.15, sample_size=10000)
-            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=10000)
+            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.4, sample_size=10000)
+            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.001, sample_size=10000)
 
         if PV_FLAG:
             # Clean PV: 0 there is no reaction, PV_max: reaction is finished

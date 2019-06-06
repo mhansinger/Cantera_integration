@@ -19,8 +19,6 @@ import os
 from tqdm import tqdm
 #import matplotlib.pyplot as plt
 
-from random import sample
-
 # import scipy.integrate
 #
 # from utils.ReactorOde import ReactorOde
@@ -81,7 +79,7 @@ class Cantera_ODE_TNF(object):
     def set_tables(self,name):
         print('reading in tables ...')
         #self.read_data(name=name)
-        self.read_data_dd(name=name)
+        self.read_data(name=name)
 
         print('setting up the output tables ...')
 
@@ -162,26 +160,11 @@ class Cantera_ODE_TNF(object):
         # write database
         # self.write_hdf()
 
-    def filter_data(self,condition='RR_CH4',threshold = 2):
-        #remove entries where there is actually no reaction
-
-        all_indexes = self.data_integrated.index.tolist()
-
-        remove_list = self.data_integrated.index[abs(self.data_integrated) > threshold].tolist()
-
-        ratio = len(remove_list) / len(all_indexes)
-        print('ratio values to remove: ', ratio)
-        remove_sample = sample(remove_list,int(len(remove_list)/10))
-
-        remove_final = [f for f in remove_list if not f in remove_sample]
-
-        indexes_to_keep = [f for f in all_indexes if not f in remove_final]
-
-        self.data_integrated = self.data_integrated.loc[indexes_to_keep]
-
-
     def write_hdf(self,nameDB):
-        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s.h5' % str(self.dt)),
+        # remove zero T values
+        self.data_integrated = self.data_integrated[self.data_integrated['T']>0]
+
+        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_small_dt%s.h5' % str(self.dt)),
                                    encoding='utf-8')
 
         # update the hdf5 database
@@ -208,9 +191,8 @@ class Cantera_ODE_TNF(object):
 
 if __name__ == '__main__':
     myReact = Cantera_ODE_TNF()
-    myReact.set_tables(name='TNF_states.h5')
+    myReact.set_tables(name='TNF_states_SMALL.h5')
     myReact.loop_ODE(remove_T_below=310,steps=1)
-    myReact.filter_data(condition='RR_CH4',threshold=3)
     myReact.write_hdf(nameDB='TNF_data_integrated')
     # myReact.integrate_Ode(1000)
 

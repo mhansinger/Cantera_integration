@@ -35,7 +35,7 @@ TNF_path_Cluster= '/home/max/HDD2_Data/OF4_Simulations/TNF_KIT/Cluster'
 
 
 cases_SuperMUC = ['case-05_ESF_linear','case-05', 'case-05_lam_lowMa', 'case-05_lowT_lam','case-05_lam_lowMa_4Ord',
-                  'case-44_react_lam_WALE','case-42_react_ESF_WALE_1Mio']
+                  'case-44_react_lam_WALE','case-42_react_ESF_WALE_1Mio', 'case-42_react_ESF_WALE_1Mio_8F']
 cases_Cluster=['case-27_lam_WALE_2.8Mio_linear','case-43_ESF_WALE_2.8Mio','case-43_ESF_WALE_2.8Mio_linear','case-46_lam_WALE_550k_Pr0.2']
 
 MUC_paths = [join(TNF_path_SuperMUC,f) for f in cases_SuperMUC]
@@ -94,8 +94,8 @@ for case in All_cases:
         # CLEAN THE DF!
         # remove all values above f=0.2 --> there is no reaction!
         if f_Bilger_FLAG:
-            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.20, sample_size=10000)
-            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.005, sample_size=10000)
+            this_clean_df = clean_states_above(df=this_df, species='f_Bilger', threshold=0.4, sample_size=10000)
+            this_clean_df = clean_states_below(df=this_df, species='f_Bilger', threshold=0.001, sample_size=10000)
 
         if PV_FLAG:
             # Clean PV: 0 there is no reaction, PV_max: reaction is finished
