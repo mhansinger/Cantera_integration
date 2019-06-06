@@ -35,7 +35,7 @@ TNF_path_Cluster= '/home/max/HDD2_Data/OF4_Simulations/TNF_KIT/Cluster'
 
 
 cases_SuperMUC = ['case-05_ESF_linear','case-05', 'case-05_lam_lowMa', 'case-05_lowT_lam','case-05_lam_lowMa_4Ord',
-                  'case-44_react_lam_WALE','case-42_react_ESF_WALE_1Mio', 'case-42_react_ESF_WALE_1Mio_8F']
+                  'case-44_react_lam_WALE','case-42_react_ESF_WALE_1Mio']
 cases_Cluster=['case-27_lam_WALE_2.8Mio_linear','case-43_ESF_WALE_2.8Mio','case-43_ESF_WALE_2.8Mio_linear','case-46_lam_WALE_550k_Pr0.2']
 
 MUC_paths = [join(TNF_path_SuperMUC,f) for f in cases_SuperMUC]

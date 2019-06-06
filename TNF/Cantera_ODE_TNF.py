@@ -162,7 +162,7 @@ class Cantera_ODE_TNF(object):
         # write database
         # self.write_hdf()
 
-    def filter_data(self,condition='RR_CH4',threshold = 2):
+    def filter_shuffle_data(self,condition='RR_CH4',threshold = 2):
         #remove entries where there is actually no reaction
 
         all_indexes = self.data_integrated.index.tolist()
@@ -178,6 +178,9 @@ class Cantera_ODE_TNF(object):
         indexes_to_keep = [f for f in all_indexes if not f in remove_final]
 
         self.data_integrated = self.data_integrated.loc[indexes_to_keep]
+
+        #shuffle the data before writing to HDD
+        self.data_integrated = self.data_integrated.sample(frac=1).reset_index(drop=True)
 
 
     def write_hdf(self,nameDB):
@@ -210,7 +213,7 @@ if __name__ == '__main__':
     myReact = Cantera_ODE_TNF()
     myReact.set_tables(name='TNF_states.h5')
     myReact.loop_ODE(remove_T_below=310,steps=1)
-    myReact.filter_data(condition='RR_CH4',threshold=3)
+    myReact.filter_shuffle_data(condition='RR_CH4',threshold=3)
     myReact.write_hdf(nameDB='TNF_data_integrated')
     # myReact.integrate_Ode(1000)
 
