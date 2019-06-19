@@ -164,35 +164,35 @@ class Cantera_ODE_TNF(object):
         # write database
         # self.write_hdf()
 
-    def filter_shuffle_data(self,condition='RR_CH4',threshold = 2):
-        #remove entries where there is actually no reaction
-
-        # threshold is very sensitive... plot the reaction rates over Z and decide which thershold seems legitimit
-
-        all_indexes = self.data_integrated.index.tolist()
-        print('index to_list done...')
-
-        remove_list = self.data_integrated.index[abs(self.data_integrated[condition]) > threshold].tolist()
-        print('remove list done...')
-
-        ratio = len(remove_list) / len(all_indexes)
-        print('ratio values to remove: ', ratio)
-        remove_sample = sample(remove_list,int(len(remove_list)/10))
-        print('sampling done ...')
-
-        remove_final = [f for f in remove_list if not f in remove_sample]
-        print('remove final done ...')
-
-        indexes_to_keep = [f for f in all_indexes if not f in remove_final]
-
-        self.data_integrated = self.data_integrated.loc[indexes_to_keep]
-        print('indexes to keep done ...')
-
-        #shuffle the data before writing to HDD
-        #self.data_integrated = self.data_integrated.sample(frac=1).reset_index(drop=True)
-        self.data_integrated_dd = dd.from_pandas(self.data_integrated,npartitions=5)
-        self.data_integrated=self.data_integrated_dd.sample(frac=1).reset_index(drop=True).compute()
-        print('shuffel is done ...')
+    # def filter_shuffle_data(self,condition='RR_CH4',threshold = 2):
+    #     #remove entries where there is actually no reaction
+    #
+    #     # threshold is very sensitive... plot the reaction rates over Z and decide which thershold seems legitimit
+    #
+    #     all_indexes = self.data_integrated.index.tolist()
+    #     print('index to_list done...')
+    #
+    #     remove_list = self.data_integrated.index[abs(self.data_integrated[condition]) > threshold].tolist()
+    #     print('remove list done...')
+    #
+    #     ratio = len(remove_list) / len(all_indexes)
+    #     print('ratio values to remove: ', ratio)
+    #     remove_sample = sample(remove_list,int(len(remove_list)/10))
+    #     print('sampling done ...')
+    #
+    #     remove_final = [f for f in remove_list if not f in remove_sample]
+    #     print('remove final done ...')
+    #
+    #     indexes_to_keep = [f for f in all_indexes if not f in remove_final]
+    #
+    #     self.data_integrated = self.data_integrated.loc[indexes_to_keep]
+    #     print('indexes to keep done ...')
+    #
+    #     #shuffle the data before writing to HDD
+    #     #self.data_integrated = self.data_integrated.sample(frac=1).reset_index(drop=True)
+    #     self.data_integrated_dd = dd.from_pandas(self.data_integrated,npartitions=5)
+    #     self.data_integrated=self.data_integrated_dd.sample(frac=1).reset_index(drop=True).compute()
+    #     print('shuffel is done ...')
 
     def write_hdf(self,nameDB):
         hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s.h5' % str(self.dt)),
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     myReact = Cantera_ODE_TNF()
     myReact.set_tables(name='TNF_states.h5')
     myReact.loop_ODE(remove_T_below=310,steps=1)
-    myReact.filter_shuffle_data(condition='RR_CH4',threshold=3)
+    #myReact.filter_shuffle_data(condition='RR_CH4',threshold=3)
     myReact.write_hdf(nameDB='TNF_data_integrated')
     # myReact.integrate_Ode(1000)
 
