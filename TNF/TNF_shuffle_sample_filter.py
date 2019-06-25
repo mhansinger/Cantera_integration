@@ -34,6 +34,8 @@ class TNF_shuffle_filter(object):
         self.path = path
         # point to the hdf library
         self.data_integrated_dd = dd.read_hdf(join(path,name),key=key)
+
+        self.data_integrated_dd = self.data_integrated_dd.reset_index(drop=True)
         self.columns = self.data_integrated_dd.columns
         self.nr_rows = self.data_integrated_dd.shape[0].compute()
 
@@ -56,18 +58,18 @@ class TNF_shuffle_filter(object):
         plt.xlabel(x)
         plt.ylabel(y)
         plt.colorbar()
-        plt.show()
+        plt.show(block=False)
 
 
     def filter_data(self,condition,threshold):
 
         self.shuffle_data()
 
-        # self.data_integrated_dd = self.data_integrated_dd[abs(self.data_integrated_dd['T']) > 300]
-        # print('Removed all T < 300')
+        self.data_integrated_dd = self.data_integrated_dd[abs(self.data_integrated_dd['T']) > 300]
+        print('Removed all T < 300')
 
-        # self.data_integrated_dd = self.data_integrated_dd[(self.data_integrated_dd['f_Bilger']) > 1e-20]
-        # print('Removed all f_Bilger == 0')
+        self.data_integrated_dd = self.data_integrated_dd[(self.data_integrated_dd['f_Bilger']) > 1e-20]
+        print('Removed all f_Bilger == 0')
 
         all_indexes = self.data_integrated_dd.index.compute()
         all_indexes = all_indexes.to_list()
@@ -87,9 +89,9 @@ class TNF_shuffle_filter(object):
         ratio = len(remove_list) / len(all_indexes)
         print('ratio values to remove: ', ratio)
 
-        removed_data = removed_data.sample(frac=0.05)
+        self.removed_data = removed_data.sample(frac=0.01).reset_index(drop=True)
 
-        self.data_integrated_dd = dd.merge(self.data_integrated_dd_filtered, removed_data)
+        self.data_filtered_merged_dd = dd.concat([self.data_integrated_dd_filtered,self.removed_data]) #  dd.merge(self.data_integrated_dd_filtered, self.removed_data)
         print('Database is filtered!')
 
 
@@ -112,13 +114,18 @@ class TNF_shuffle_filter(object):
         new_name = join(self.path,'TNF_integrated_filtered_dt%s.h5' % str(dt))
         #self.data_integrated_dd.to_hdf(path_or_buf=new_name,key=nameDB)
         self.data_integrated_dd.to_hdf(path_or_buf=new_name, key=nameDB)
+        print('Database is written ... ')
 
 
 
 if __name__=='__main__':
     TNF = TNF_shuffle_filter()
-    TNF.read_data_dd(name='TNF_integrated_sample_dt1e-7.h5')
-    # TNF.filter_data(condition='RR_CH4',threshold=2)
-    # TNF.create_subset()
-    # TNF.plot_subset(x='f_Bilger',y='RR_CH4',color_by='T')
-    #TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
+    TNF.read_data_dd(name='TNF_integrated_sample_dt1e-07.h5')
+    TNF.filter_data(condition='RR_CH4',threshold=5)
+
+    TNF.data_integrated_dd.compute()
+    TNF.create_subset(frac=0.5)
+    TNF.plot_subset(x='f_Bilger',y='RR_CH4',color_by='T')
+    TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
+
+    # works ... June, 2019

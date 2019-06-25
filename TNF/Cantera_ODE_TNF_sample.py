@@ -56,6 +56,9 @@ class Cantera_ODE_TNF(object):
         self.TNF_data_path = join(path,name)
         self.TNF_database_org=pd.read_hdf(self.TNF_data_path)
 
+        # reset index
+        self.TNF_database_org = self.TNF_database_org.reset_index(drop=True)
+
         print('These are the data features:')
         print(self.TNF_database_org.columns)
 
@@ -63,6 +66,9 @@ class Cantera_ODE_TNF(object):
 
         self.TNF_data_path = join(path, name)
         self.TNF_database_org=dd.read_hdf(self.TNF_data_path, key='TNF_raw_data')
+
+        # reset index
+        self.TNF_database_org = self.TNF_database_org.reset_index(drop=True)
 
 
         print('These are the data features:')
@@ -142,7 +148,7 @@ class Cantera_ODE_TNF(object):
             this_f_Bilger=this_set['f_Bilger']
 
             # CRITERIA TO REMOVE UNNECESSARY ENTRIES WHERE T IS AT T=300
-            if this_T > remove_T_below:
+            if this_T > remove_T_below and np.sum(Y_vector)>0 and this_f_Bilger<0.4:
                 try:
                     ###############################
                     # ODE integration
@@ -153,25 +159,38 @@ class Cantera_ODE_TNF(object):
                     self.data_integrated_np[idx_fullset, :] = this_out_vector
 
                 except:
-                    print('Error in integration')
+                    #print('Error in integration')
+                    print('Y: ', Y_vector)
+                    print('T: ', this_T)
+                    print('index: ',idx_fullset )
+                    break
 
         self.data_integrated=pd.DataFrame(data=self.data_integrated_np,columns=self.columns_out)
 
         # write database
         # self.write_hdf()
 
-    def write_hdf(self,nameDB):
+    def write_hdf(self,key):
         # remove zero T values
         self.data_integrated = self.data_integrated[self.data_integrated['T']>0]
 
-        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_small_dt%s.h5' % str(self.dt)),
-                                   encoding='utf-8')
+        # remove all the zero rows
+        self.data_integrated=self.data_integrated.loc[(self.data_integrated!=0).all(1)]
 
-        # update the hdf5 database
-        hdf_database.append(nameDB, self.data_integrated)
-        hdf_database.close()
+        # reindex the dataset
+        self.data_integrated = self.data_integrated.reset_index(drop=True)
 
-        #self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
+        # hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_sample_dt%s.h5' % str(self.dt)),
+        #                            encoding='utf-8')
+        #
+        # # update the hdf5 database
+        # hdf_database.append(key, self.data_integrated)
+        # hdf_database.close()
+
+        path_name = join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_sample_dt%s.h5' % str(self.dt))
+        self.data_integrated.to_hdf(path_or_buf=path_name,key=key,format='table')
+
+
 '''
     def plot_histograms(self,species):
         this_set = self.TNF_database_org[species].compute()
@@ -191,9 +210,9 @@ class Cantera_ODE_TNF(object):
 
 if __name__ == '__main__':
     myReact = Cantera_ODE_TNF()
-    myReact.set_tables(name='TNF_states_SMALL.h5')
-    myReact.loop_ODE(remove_T_below=310,steps=1)
-    myReact.write_hdf(nameDB='TNF_data_integrated')
+    myReact.set_tables(name='TNF_states_sample.h5')
+    myReact.loop_ODE(remove_T_below=400,steps=1)
+    myReact.write_hdf(key='TNF_data_integrated')
     # myReact.integrate_Ode(1000)
 
     #reactor = myReact.integrate_cantera(iloc=0)

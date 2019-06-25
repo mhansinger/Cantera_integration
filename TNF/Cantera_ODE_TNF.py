@@ -96,6 +96,7 @@ class Cantera_ODE_TNF(object):
         self.columns_out = self.columns_out + self.columns_out_after +self.columns_RR
 
         self.columns_out.append('f_Bilger')
+        self.columns_out.append('rho')
 
         self.len_dataset = len(self.TNF_database_org)
 
@@ -125,7 +126,7 @@ class Cantera_ODE_TNF(object):
         # mass fraction reaction rate dY/dt [1/s] same as in Cantera OF:
         RR_Y = (Y_after - Y) * current_rho / self.dt
 
-        return T_after, Y_after, RR_Y
+        return T_after, Y_after, RR_Y, current_rho
 
 
     def loop_ODE(self,remove_T_below,steps):
@@ -150,10 +151,10 @@ class Cantera_ODE_TNF(object):
                 try:
                     ###############################
                     # ODE integration
-                    T_after, Y_after, RR_Y = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm,steps=steps)
+                    T_after, Y_after, RR_Y, current_rho = self.ODE_integrate(Y=Y_vector, T=this_T, p=ct.one_atm,steps=steps)
                     ###############################
 
-                    this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, RR_Y, this_f_Bilger))
+                    this_out_vector = np.hstack((Y_vector, this_T, Y_after, T_after, RR_Y, this_f_Bilger, current_rho))
                     self.data_integrated_np[idx_fullset, :] = this_out_vector
 
                 except:
@@ -195,14 +196,28 @@ class Cantera_ODE_TNF(object):
     #     print('shuffel is done ...')
 
     def write_hdf(self,nameDB):
-        hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s.h5' % str(self.dt)),
-                                   encoding='utf-8')
 
-        # update the hdf5 database
-        hdf_database.append(nameDB, self.data_integrated)
-        hdf_database.close()
+        # remove zero T values
+        self.data_integrated = self.data_integrated[self.data_integrated['T']>0]
+
+        # remove all the zero rows
+        self.data_integrated=self.data_integrated.loc[(self.data_integrated!=0).all(1)]
+
+        # reindex the dataset
+        self.data_integrated = self.data_integrated.reset_index(drop=True)
+
+        # hdf_database = pd.HDFStore(join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s.h5' % str(self.dt)),
+        #                            encoding='utf-8')
+        #
+        # # update the hdf5 database
+        # hdf_database.append(nameDB, self.data_integrated)
+        # hdf_database.close()
 
         #self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
+
+        path_name = join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_sample_dt%s.h5' % str(self.dt))
+        self.data_integrated.to_hdf(path_or_buf=path_name,key=key,format='table')
+
 '''
     def plot_histograms(self,species):
         this_set = self.TNF_database_org[species].compute()
