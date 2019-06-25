@@ -39,27 +39,40 @@ class TNF_shuffle_filter(object):
 
     def shuffle_data(self):
         # randomize the order of the data set
-        self.data_shuffled = self.data_integrated_dd.sample(frac=1).reset_index(drop=True)
+        self.data_integrated_dd = self.data_integrated_dd.sample(frac=1).reset_index(drop=True)
         print('Database is shuffled!')
 
     def create_subset(self,frac = 0.001):
-        self.data_subset = self.data_shuffled.sample(frac=frac).reset_index(drop=True).compute()
+        print('Creating subset ...')
+        self.data_subset = self.data_integrated_dd.sample(frac=frac).reset_index(drop=True).compute()
+
 
     def plot_subset(self,x='f_Bilger',y='RR_CH4',color_by='T'):
         # scatter a subset of data
         plt.scatter(self.data_subset[x],self.data_subset[y],c=self.data_subset[color_by],s=0.2)
+        plt.set_cmap('hot')
 
-        plt.title('Subset of data, colored by: ',color_by)
+        #plt.title('Subset of data, colored by: ',color_by)
         plt.xlabel(x)
         plt.ylabel(y)
         plt.colorbar()
+        plt.show()
 
 
     def filter_data(self,condition,threshold):
 
-        all_indexes = self.data_integrated_dd.index.compute().tolist()
+        self.shuffle_data()
+
+        # self.data_integrated_dd = self.data_integrated_dd[abs(self.data_integrated_dd['T']) > 300]
+        # print('Removed all T < 300')
+
+        # self.data_integrated_dd = self.data_integrated_dd[(self.data_integrated_dd['f_Bilger']) > 1e-20]
+        # print('Removed all f_Bilger == 0')
+
+        all_indexes = self.data_integrated_dd.index.compute()
         all_indexes = all_indexes.to_list()
         print('index to_list done...')
+
 
         # create a dask.dataframe where the condition is fulfilled
         self.data_integrated_dd_filtered = self.data_integrated_dd[abs(self.data_integrated_dd[condition]) >= threshold]
@@ -79,8 +92,6 @@ class TNF_shuffle_filter(object):
         self.data_integrated_dd = dd.merge(self.data_integrated_dd_filtered, removed_data)
         print('Database is filtered!')
 
-        # now shuffle everything!
-        self.shuffle_data()
 
 
     def write_hdf(self,nameDB,dt='1e-7'):
@@ -99,4 +110,15 @@ class TNF_shuffle_filter(object):
         # hdf_database.close()
 
         new_name = join(self.path,'TNF_integrated_filtered_dt%s.h5' % str(dt))
-        self.data_integrated_dd.to_hdf(path_or_buf=new_name,key=nameDB)
+        #self.data_integrated_dd.to_hdf(path_or_buf=new_name,key=nameDB)
+        self.data_integrated_dd.to_hdf(path_or_buf=new_name, key=nameDB)
+
+
+
+if __name__=='__main__':
+    TNF = TNF_shuffle_filter()
+    TNF.read_data_dd(name='TNF_integrated_dt1e-7.h5')
+    # TNF.filter_data(condition='RR_CH4',threshold=2)
+    # TNF.create_subset()
+    # TNF.plot_subset(x='f_Bilger',y='RR_CH4',color_by='T')
+    #TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
