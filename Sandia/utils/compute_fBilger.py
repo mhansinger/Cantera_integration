@@ -36,24 +36,46 @@ def compute_fBilger(Y):
 
     Nenner = 2 * (Z_cf - Z_co) / w_C + (Z_hf - Z_ho) / (2 * w_H) - (Z_of - Z_oo) / w_O
 
-    Y_H2 = Y[:,0]
-    Y_H = Y[:,1]
-    Y_O = Y[:,2]
-    Y_O2 = Y[:,3]
-    Y_OH = Y[:,4]
-    Y_H2O = Y[:,5]
-    Y_HO2 = Y[:,6]
-    Y_H2O2 = Y[:,7]
-    Y_CH3 = Y[:,8]
-    Y_CH4 = Y[:,9]
-    Y_CO = Y[:,10]
-    Y_CO2 = Y[:,11]
-    Y_CH2O = Y[:,12]
-    Y_CH3OH = Y[:,13]
-    Y_C2H2 = Y[:,14]
-    Y_C2H4 = Y[:,15]
-    Y_C2H6 = Y[:,16]
-    Y_CH2CO = Y[:,17]
+    # might be different data structures ...
+    try:
+        Y_H2 = Y[:, 0]
+        Y_H = Y[:, 1]
+        Y_O = Y[:, 2]
+        Y_O2 = Y[:, 3]
+        Y_OH = Y[:, 4]
+        Y_H2O = Y[:, 5]
+        Y_HO2 = Y[:, 6]
+        Y_H2O2 = Y[:, 7]
+        Y_CH3 = Y[:, 8]
+        Y_CH4 = Y[:, 9]
+        Y_CO = Y[:, 10]
+        Y_CO2 = Y[:, 11]
+        Y_CH2O = Y[:, 12]
+        Y_CH3OH = Y[:, 13]
+        Y_C2H2 = Y[:, 14]
+        Y_C2H4 = Y[:, 15]
+        Y_C2H6 = Y[:, 16]
+        Y_CH2CO = Y[:, 17]
+
+    except IndexError:
+        Y_H2 = Y[0]
+        Y_H = Y[1]
+        Y_O = Y[2]
+        Y_O2 = Y[3]
+        Y_OH = Y[4]
+        Y_H2O = Y[5]
+        Y_HO2 = Y[6]
+        Y_H2O2 = Y[7]
+        Y_CH3 = Y[8]
+        Y_CH4 = Y[9]
+        Y_CO = Y[10]
+        Y_CO2 = Y[11]
+        Y_CH2O = Y[12]
+        Y_CH3OH = Y[13]
+        Y_C2H2 = Y[14]
+        Y_C2H4 = Y[15]
+        Y_C2H6 = Y[16]
+        Y_CH2CO = Y[17]
     
     Z_C = w_C / w_CH3 * Y_CH3 + w_C / w_CH4 * Y_CH4 + w_C / w_CO * Y_CO + w_C / w_CO2 * Y_CO2 + w_C / w_CH2CO * Y_CH2CO \
           + w_C / w_CH3OH * Y_CH3OH + 2 * w_C / w_C2H2 * Y_C2H2 + 2 * w_C / w_C2H4 * Y_C2H4 + 2 * w_C / w_C2H6 * Y_C2H6 + w_C / w_CH2O * Y_CH2O
@@ -67,5 +89,5 @@ def compute_fBilger(Y):
 
     f_Bilger = (2 * (Z_C - Z_co) / w_C + (Z_H - Z_ho) / (2 * w_H) - (Z_O - Z_oo) / w_O) / Nenner
 
-    print(f_Bilger.shape)
+    #print(f_Bilger.shape)
     return f_Bilger

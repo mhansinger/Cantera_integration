@@ -1,7 +1,7 @@
 '''
 This is to shuffle the h5 data base
 
-last change: June 2019
+last change: AUGUST 2019
 
 author: mhansinger
 '''
@@ -122,3 +122,6 @@ if __name__=='__main__':
     # TNF.create_subset()
     # TNF.plot_subset(x='f_Bilger',y='RR_CH4',color_by='T')
     #TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
+
+
+# Outdated ... currently using TNF_shuffle_sample_filter.py

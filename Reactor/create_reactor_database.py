@@ -53,7 +53,7 @@ class creacte_reactor_database(object):
         self.TNF_database_org = None
         self.t_end = 1e-3
 
-        self.CH4_range = np.linspace(0.03,0.08,1000)
+        self.CH4_range = np.linspace(0.005,0.25,1000) #np.linspace(0.03,0.08,1000)
         self.Y_O2_air = 0.233
         self.Y_N2_air = 1- self.Y_O2_air
 
@@ -189,5 +189,5 @@ class creacte_reactor_database(object):
 if __name__ == '__main__':
     test = creacte_reactor_database()
     test.set_tables()
-    test.loop_reactor_ignition(1000)
-    test.write_database(name='reactor_integrated_fine',key='reactor_integrated')
+    test.loop_reactor_ignition(500)
+    test.write_database(name='reactor_integrated',key='reactor_integrated')
