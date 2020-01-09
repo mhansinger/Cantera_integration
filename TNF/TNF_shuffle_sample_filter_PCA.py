@@ -1,9 +1,11 @@
 '''
 This is to shuffle the h5 data base
 
-last change: AUGUST 2019
+last change: JAN 2020
 
 author: mhansinger
+
+This is the version which changes the composition space into PC space and performs sampling from there. Maybe sampling is more homogeneous then??
 '''
 
 import pandas as pd
@@ -109,13 +111,12 @@ class TNF_shuffle_filter(object):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # augmenting the database!
         if self.augment_DB is True:
-            self.augment_database()
+            self.augment_database_pca()
 
         # clear the data base from unphysical values
         self.data_ODE_augmented_dd = self.data_ODE_augmented_dd[self.data_ODE_augmented_dd[main_RR] < 0].sample(frac=1).reset_index(drop=True)
         self.data_ODE_augmented_dd = self.data_ODE_augmented_dd[abs(self.data_ODE_augmented_dd[main_RR]) >= abs(quantile_intially)]
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
         self.removed_data = removed_data.sample(frac=0.001).reset_index(drop=True)
 
@@ -128,11 +129,9 @@ class TNF_shuffle_filter(object):
         quantile_merge = self.data_filtered_merged_dd[main_RR].quantile(quantile).compute()
         print('Quantile %f of %s merge: %f' % (quantile, main_RR, quantile_merge))
 
-
     def create_subset(self,frac = 0.1):
         print('Creating subset ...')
         self.data_subset = self.data_filtered_merged_dd.sample(frac=frac).reset_index(drop=True).compute()
-
 
     def plot_subset(self,x='f_Bilger',y='RR_CH4',color_by='T'):
         # scatter a subset of data
@@ -146,76 +145,72 @@ class TNF_shuffle_filter(object):
         plt.show(block=False)
 
 
-    # CANTERA integration if DB is to augment
-    def augment_database(self):
-        print('Augmenting database ... ')
+    def augment_database_pca(self):
+        'augments the database in PC space'
+
+        print('Augmenting database in pca space ... ')
 
         self.data_ODE_np = np.zeros((1, len(self.columns)))
 
-        #loop over the 'high RR_CH4' data
-        # ONCE over all high data values
-        print('\nIntegrate all high values ... ')
-        for idx_set, this_set in tqdm(self.data_integrated_dd_filtered.iterrows()):
-            this_RR_CH4 = this_set['RR_CH4']
+        # set up PC for features and targets
 
-            this_y = this_set[self.species_names]
-            this_T = this_set['T']
-            this_f_Bilger = this_set['f_Bilger']
+        n_components = 7
+        self.pca_feature = PCA(n_components=n_components)
+        self.pca_targets = PCA(n_components=2)
 
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            T_after, Y_after, RR_after, rho_after = self.ODE_integrate(this_y,this_T,self.p)
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            update_vector_np = np.hstack((this_y, this_T, Y_after, T_after, RR_after, this_f_Bilger))
+        TNF_features = self.data_integrated_dd_filtered[self.columns[:20]]
+        TNF_targets = self.data_integrated_dd_filtered[self.columns[-20:-1]]
 
-            self.data_ODE_np = np.vstack((self.data_ODE_np,update_vector_np))
+        TNF_features_pca = self.pca_feature.fit_transform(TNF_features)
+        TNF_targets_pca = self.pca_targets.fit_transform(TNF_targets)
 
-        #self.data_ODE_augmented_dd = dd.from_array(x=self.data_ODE_np,columns=self.columns)
-        #self.data_ODE_augmented_dd = dd.from_array(x=self.data_ODE_np,columns=self.columns)
+        self.TNF_targets_pca_df = pd.DataFrame(TNF_targets_pca, columns=['PC1','PC2'])
 
-        # compute the 0.1 quantile as selection criteria for the integration with random species changes...
-        quantile_01 = self.data_integrated_dd['RR_CH4'].quantile(0.05).compute()
+        # this value has been determined visually... could be changed
+        PC_threshold_value = 100
+        # get the index_list of all the values where PC_threshold_value is fulfilled
+        self.index1_pca = self.TNF_targets_pca_df[np.sqrt(self.TNF_targets_pca_df['PC1']**2 + self.TNF_targets_pca_df['PC2']**2) > PC_threshold_value].index.to_list()
+
+        print('Ratio of filtered values: %f' % (len(self.index1_pca)/len(self.TNF_targets_pca_df)))
+
+        # get self.TNF_features_pca where target > thershold
+        print('Reducing feature set ...')
+        self.TNF_features_pca_reduced_df = pd.DataFrame(TNF_features_pca[self.index1_pca,:])
 
         # NOW loop over values where RR_CH4 > quantile_01
-        print('\nIntegrate with random where RR_CH4 > quantile_01 ... ')
-        for idx_set, this_set in tqdm(self.data_integrated_dd_filtered.iterrows()):
+        print('\nIntegrate with random shuffeling in PC-space ... ')
+        for idx_set, this_feature_set_pca in tqdm(self.TNF_features_pca_reduced_df.iterrows()):
 
-            this_RR_CH4 = this_set['RR_CH4']
+            for _ in range(50):
+                this_feature_set_altered_pca = this_feature_set_pca.values
 
-            if this_RR_CH4 < quantile_01:
+                #print(this_feature_set_altered_pca)
+                # #Modify in PC space!
+                for n in range(n_components):
+                    this_feature_set_altered_pca[n] = this_feature_set_pca.values[n] * (1 + np.random.randn() * 1e-2)
 
-                for _ in range(100):
-                    this_set_altered = this_set
+                # Inverse transform back into species space
+                this_feature_set_altered = self.pca_feature.inverse_transform(this_feature_set_altered_pca)
 
-                    # #Modify some species and Temperature
-                    this_set_altered['CH4'] = this_set['CH4'] * (1 + np.random.randn() * 1e-3)
-                    this_set_altered['CO2'] = this_set['CO2'] * (1 + np.random.randn() * 1e-3)
-                    # this_set_altered['O2'] = this_set['O2'] * (1 + np.random.randn() * 1e-3)
-                    # this_set_altered['H2O'] = this_set['H2O'] * (1 + np.random.randn() * 1e-3)
-                    this_set_altered['OH'] = this_set['OH'] * (1 + np.random.randn() * 1e-4)
-                    this_set_altered['H'] = this_set['H'] * (1 + np.random.randn() * 1e-4)
+                # only the species matter: entries 1:19
+                this_y = this_feature_set_altered[:-1]
+                # only the temperature -> last entry
+                this_T = this_feature_set_altered[-1]
 
-                    this_y = this_set_altered[self.species_names]
-                    this_T = this_set_altered['T'] * (1 + np.random.randn() * 5e-3)
+                # recompute f_Bilger because species composition has changed!
+                this_f_Bilger = compute_fBilger(this_y)
 
-                    # if this_T > 2200:
-                    #     this_T = this_set_altered['T']
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                T_after, Y_after, RR_after, rho_after = self.ODE_integrate(this_y, this_T, self.p)
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                    # this_T = this_set_altered['T']
+                update_vector_np = np.hstack((this_y, this_T, Y_after, T_after, RR_after, this_f_Bilger))
 
-                    # recompute f_Bilger because species composition has changed!
-                    this_f_Bilger = compute_fBilger(this_y.values)
+                self.data_ODE_np = np.vstack((self.data_ODE_np, update_vector_np))
 
-                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    T_after, Y_after, RR_after, rho_after = self.ODE_integrate(this_y, this_T, self.p)
-                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-                    update_vector_np = np.hstack((this_y, this_T, Y_after, T_after, RR_after, this_f_Bilger))
-
-                    self.data_ODE_np = np.vstack((self.data_ODE_np, update_vector_np))
-
-            self.data_ODE_augmented_dd = dd.from_array(x=self.data_ODE_np, columns=self.columns)
-
+        print('Data base augmentation is done ...')
+        self.data_ODE_augmented_dd = dd.from_array(x=self.data_ODE_np, columns=self.columns)
 
 
     def ODE_integrate(self,Y,T,p):
@@ -256,7 +251,7 @@ class TNF_shuffle_filter(object):
         # hdf_database.append(nameDB, self.data_integrated)
         # hdf_database.close()
 
-        new_name = join(self.path,'TNF_integrated_filtered_dt%s.h5' % str(dt))
+        new_name = join(self.path,'TNF_integrated_filtered_pca_dt%s.h5' % str(dt))
         #self.data_integrated_dd.to_hdf(path_or_buf=new_name,key=nameDB)
         self.data_integrated_dd.to_hdf(path_or_buf=new_name, key=nameDB)
         print('Database is written ... ')
@@ -274,7 +269,7 @@ if __name__=='__main__':
     TNF.plot_subset(x='f_Bilger', y='RR_H2', color_by='T')
     TNF.plot_subset(x='f_Bilger', y='RR_CO', color_by='T')
     TNF.plot_subset(x='f_Bilger', y='RR_OH', color_by='T')
-    TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
+    #TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
 
     # works ... August, 2019
 
