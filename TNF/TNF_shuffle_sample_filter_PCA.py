@@ -188,7 +188,7 @@ class TNF_shuffle_filter(object):
                 #print(this_feature_set_altered_pca)
                 # #Modify in PC space!
                 for n in range(n_components):
-                    this_feature_set_altered_pca[n] = this_feature_set_pca.values[n] * (1 + np.random.randn() * 1e-2)
+                    this_feature_set_altered_pca[n] = this_feature_set_pca.values[n] * (1 + np.random.randn() * 1e-3)
 
                 # Inverse transform back into species space
                 this_feature_set_altered = self.pca_feature.inverse_transform(this_feature_set_altered_pca)
@@ -294,5 +294,7 @@ if __name__=='__main__':
 #     plt.show()
 #
     plt.scatter(TNF.data_ODE_augmented_dd['f_Bilger'].compute(),TNF.data_ODE_augmented_dd['T'].compute(),s=0.2)
+    plt.xlabel('f_Bilger')
+    plt.ylabel('T')
     plt.show()
 
