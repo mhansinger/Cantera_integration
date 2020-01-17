@@ -154,7 +154,7 @@ class TNF_shuffle_filter(object):
 
         # set up PC for features and targets
 
-        n_components = 7
+        n_components = 5
         self.pca_feature = PCA(n_components=n_components)
         self.pca_targets = PCA(n_components=2)
 
@@ -168,7 +168,7 @@ class TNF_shuffle_filter(object):
         self.TNF_targets_pca_df = pd.DataFrame(TNF_targets_pca, columns=['PC1','PC2'])
 
         # this value has been determined visually... could be changed
-        PC_threshold_value = 100
+        PC_threshold_value = 50
         # get the index_list of all the values where PC_threshold_value is fulfilled
         self.index1_pca = self.TNF_targets_pca_df[np.sqrt(self.TNF_targets_pca_df['PC1']**2 + self.TNF_targets_pca_df['PC2']**2) > PC_threshold_value].index.to_list()
 
@@ -188,7 +188,7 @@ class TNF_shuffle_filter(object):
                 #print(this_feature_set_altered_pca)
                 # #Modify in PC space!
                 for n in range(n_components):
-                    this_feature_set_altered_pca[n] = this_feature_set_pca.values[n] * (1 + np.random.randn() * 1e-3)
+                    this_feature_set_altered_pca[n] = this_feature_set_pca.values[n] * (1 + np.random.randn() * 5e-3)
 
                 # Inverse transform back into species space
                 this_feature_set_altered = self.pca_feature.inverse_transform(this_feature_set_altered_pca)
@@ -278,10 +278,10 @@ if __name__=='__main__':
     plt.ylabel('RR_CH4')
     plt.show()
 
-    plt.scatter(TNF.data_ODE_augmented_dd['f_Bilger'].compute(),TNF.data_ODE_augmented_dd['RR_OH'].compute(),s=0.2,c=TNF.data_ODE_augmented_dd['T'].compute())
-    plt.xlabel('f_Bilger')
-    plt.ylabel('RR_OH')
-    plt.show()
+    # plt.scatter(TNF.data_ODE_augmented_dd['f_Bilger'].compute(),TNF.data_ODE_augmented_dd['RR_OH'].compute(),s=0.2,c=TNF.data_ODE_augmented_dd['T'].compute())
+    # plt.xlabel('f_Bilger')
+    # plt.ylabel('RR_OH')
+    # plt.show()
 
     # plt.scatter(TNF.data_ODE_augmented_dd['f_Bilger'].compute(),TNF.data_ODE_augmented_dd['T'].compute(),s=0.2)
     # plt.show()
