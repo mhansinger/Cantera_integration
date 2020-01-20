@@ -184,7 +184,7 @@ class TNF_shuffle_filter(object):
 
             if this_RR_CH4 < quantile_01:
 
-                for _ in range(100):
+                for _ in range(10):
                     this_set_altered = this_set
 
                     # #Modify some species and Temperature
@@ -271,9 +271,9 @@ if __name__=='__main__':
     TNF.data_integrated_dd.compute()
     TNF.create_subset(frac=0.9)
     TNF.plot_subset(x='f_Bilger', y='RR_CH4', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_H2', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_CO', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_OH', color_by='T')
+    # TNF.plot_subset(x='f_Bilger', y='RR_H2', color_by='T')
+    # TNF.plot_subset(x='f_Bilger', y='RR_CO', color_by='T')
+    # TNF.plot_subset(x='f_Bilger', y='RR_OH', color_by='T')
     TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
 
     # works ... August, 2019

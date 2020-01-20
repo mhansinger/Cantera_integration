@@ -235,14 +235,14 @@ class Cantera_ODE_TNF(object):
             plt.show(block=False)
 '''
 
-if __name__ == '__main__':
-    myReact = Cantera_ODE_TNF()
-    myReact.set_tables(name='TNF_states.h5')
-    myReact.loop_ODE(remove_T_below=310,steps=1)
-    #myReact.filter_shuffle_data(condition='RR_CH4',threshold=3)
-    myReact.write_hdf(nameDB='TNF_data_integrated')
-    # myReact.integrate_Ode(1000)
-
-    #reactor = myReact.integrate_cantera(iloc=0)
+# if __name__ == '__main__':
+#     myReact = Cantera_ODE_TNF()
+#     myReact.set_tables(name='TNF_states.h5')
+#     myReact.loop_ODE(remove_T_below=310,steps=1)
+#     #myReact.filter_shuffle_data(condition='RR_CH4',threshold=3)
+#     myReact.write_hdf(nameDB='TNF_data_integrated')
+#     # myReact.integrate_Ode(1000)
+#
+#     #reactor = myReact.integrate_cantera(iloc=0)
 
 

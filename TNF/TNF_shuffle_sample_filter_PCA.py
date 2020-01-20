@@ -60,7 +60,7 @@ class TNF_shuffle_filter(object):
         self.data_integrated_dd = self.data_integrated_dd.sample(frac=1).reset_index(drop=True)
         print('Database is shuffled!')
 
-    def filter_data(self,main_RR,T_min,f_max,quantile):
+    def filter_data(self,main_RR,T_min,f_max,quantile,rounds,PC_threshold = 50):
         '''
 
         :param main_RR: species reaction rate
@@ -69,6 +69,8 @@ class TNF_shuffle_filter(object):
         :return:
         '''
 
+        self.rounds = rounds
+        self.PC_threshold = PC_threshold
         self.shuffle_data()
 
         self.data_integrated_dd = self.data_integrated_dd[abs(self.data_integrated_dd['T']) > T_min]
@@ -150,13 +152,33 @@ class TNF_shuffle_filter(object):
 
         print('Augmenting database in pca space ... ')
 
+        # empty data array where the augmented data is stored
         self.data_ODE_np = np.zeros((1, len(self.columns)))
 
         # set up PC for features and targets
-
         n_components = 5
         self.pca_feature = PCA(n_components=n_components)
         self.pca_targets = PCA(n_components=2)
+
+        # integrate highest values
+
+        #loop over the 'high RR_CH4' data
+        # ONCE over all high data values
+        print('\nIntegrate all high values ... ')
+        for idx_set, this_set in tqdm(self.data_integrated_dd_filtered.iterrows()):
+            this_RR_CH4 = this_set['RR_CH4']
+
+            this_y = this_set[self.species_names]
+            this_T = this_set['T']
+            this_f_Bilger = this_set['f_Bilger']
+
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            T_after, Y_after, RR_after, rho_after = self.ODE_integrate(this_y,this_T,self.p)
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            update_vector_np = np.hstack((this_y, this_T, Y_after, T_after, RR_after, this_f_Bilger))
+
+            self.data_ODE_np = np.vstack((self.data_ODE_np,update_vector_np))
 
 
         TNF_features = self.data_integrated_dd_filtered[self.columns[:20]]
@@ -168,9 +190,9 @@ class TNF_shuffle_filter(object):
         self.TNF_targets_pca_df = pd.DataFrame(TNF_targets_pca, columns=['PC1','PC2'])
 
         # this value has been determined visually... could be changed
-        PC_threshold_value = 50
-        # get the index_list of all the values where PC_threshold_value is fulfilled
-        self.index1_pca = self.TNF_targets_pca_df[np.sqrt(self.TNF_targets_pca_df['PC1']**2 + self.TNF_targets_pca_df['PC2']**2) > PC_threshold_value].index.to_list()
+        #self.PC_threshold = 50
+        # get the index_list of all the values where self.PC_threshold is fulfilled
+        self.index1_pca = self.TNF_targets_pca_df[np.sqrt(self.TNF_targets_pca_df['PC1']**2 + self.TNF_targets_pca_df['PC2']**2) > self.PC_threshold].index.to_list()
 
         print('Ratio of filtered values: %f' % (len(self.index1_pca)/len(self.TNF_targets_pca_df)))
 
@@ -182,7 +204,7 @@ class TNF_shuffle_filter(object):
         print('\nIntegrate with random shuffeling in PC-space ... ')
         for idx_set, this_feature_set_pca in tqdm(self.TNF_features_pca_reduced_df.iterrows()):
 
-            for _ in range(50):
+            for _ in range(self.rounds):
                 this_feature_set_altered_pca = this_feature_set_pca.values
 
                 #print(this_feature_set_altered_pca)
@@ -236,7 +258,7 @@ class TNF_shuffle_filter(object):
 
 
 
-    def write_hdf(self,nameDB,dt='1e-7'):
+    def write_hdf(self,nameDB,key,dt='1e-7'):
         # not yet implemented!
         # try to use chunks and write new hdf in smaller tables, this is useful for the batch training then
 
@@ -251,25 +273,27 @@ class TNF_shuffle_filter(object):
         # hdf_database.append(nameDB, self.data_integrated)
         # hdf_database.close()
 
-        new_name = join(self.path,'TNF_integrated_filtered_pca_dt%s.h5' % str(dt))
+        new_name = join(self.path,nameDB+'_dt%s.h5' % str(dt))
         #self.data_integrated_dd.to_hdf(path_or_buf=new_name,key=nameDB)
-        self.data_integrated_dd.to_hdf(path_or_buf=new_name, key=nameDB)
-        print('Database is written ... ')
+        self.data_integrated_dd.to_hdf(path_or_buf=new_name, key=key)
+        print('################################')
+        print('Database is written to: ')
+        print(new_name)
+        print('################################')
 
-
-
+# %%
 if __name__=='__main__':
     TNF = TNF_shuffle_filter(augment_DB=True)
     TNF.read_data_dd(name='TNF_integrated_sample_dt1e-07.h5')
-    TNF.filter_data(main_RR='RR_CH4', T_min = 800,f_max=0.15,quantile=0.2)
+    TNF.filter_data(main_RR='RR_CH4', T_min = 700, f_max=0.15, quantile=0.5, rounds = 10, PC_threshold=10)
 
     TNF.data_integrated_dd.compute()
     TNF.create_subset(frac=0.9)
     TNF.plot_subset(x='f_Bilger', y='RR_CH4', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_H2', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_CO', color_by='T')
-    TNF.plot_subset(x='f_Bilger', y='RR_OH', color_by='T')
-    #TNF.write_hdf(nameDB='TNF_filtered',dt='1e-7')
+    # TNF.plot_subset(x='f_Bilger', y='RR_H2', color_by='T')
+    # TNF.plot_subset(x='f_Bilger', y='RR_CO', color_by='T')
+    # TNF.plot_subset(x='f_Bilger', y='RR_OH', color_by='T')
+    TNF.write_hdf(nameDB='TNF_integrated_filtered_pca_sample',key='TNF_filtered',dt='1e-7')
 
     # works ... August, 2019
 
