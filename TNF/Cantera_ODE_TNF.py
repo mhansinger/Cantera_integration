@@ -54,19 +54,18 @@ class Cantera_ODE_TNF(object):
         self.TNF_database_org = None
         print('Time step is: %s' % str(self.dt))
 
-    def read_data(self,name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
+    def read_data(self,name):
 
-        self.TNF_data_path = join(path,name)
+        self.TNF_data_path = join(self.path,name)
         self.TNF_database_org=pd.read_hdf(self.TNF_data_path)
 
         print('These are the data features:')
         print(self.TNF_database_org.columns)
 
-    def read_data_dd(self, name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database'):
+    def read_data_dd(self, name):
 
-        self.TNF_data_path = join(path, name)
-        self.TNF_database_org=dd.read_hdf(self.TNF_data_path, key='TNF_raw_data')
-
+        self.TNF_data_path = join(self.path, name)
+        self.TNF_database_org=dd.read_hdf(self.TNF_data_path, key=self.key)
 
         print('These are the data features:')
         print(self.TNF_database_org.columns)
@@ -79,8 +78,11 @@ class Cantera_ODE_TNF(object):
         #self.plot_histograms('CO2')
         #self.plot_histograms('CH4')
 
-    def set_tables(self,name):
+    def set_tables(self,name,path='/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database',key='TNF_raw_data'):
         print('reading in tables ...')
+        
+        self.path = path
+        self.key = key
         #self.read_data(name=name)
         self.read_data_dd(name=name)
 
@@ -131,11 +133,11 @@ class Cantera_ODE_TNF(object):
 
     def loop_ODE(self,remove_T_below,steps):
         print(' ')
-        #for row in tqdm(range(self.len_dataset)):
+        # for row in tqdm(range(self.len_dataset)):
         for idx_fullset, this_set in tqdm(self.TNF_database_org.iterrows()):
-            #print('Row number: ',idx_fullset)
+            # print('Row number: ',idx_fullset)
 
-            #this_set = self.TNF_database_org.iloc[row].calculate()      # calculate only if NOT dask!
+            # this_set = self.TNF_database_org.iloc[row].calculate()      # calculate only if NOT dask!
             Y_vector = np.zeros(len(self.gas.species_names))
 
             # make sure species vector is in the correct order!
@@ -144,7 +146,7 @@ class Cantera_ODE_TNF(object):
                 Y_vector[idx] = this_set[sp]
 
             this_T = this_set['T']
-            this_f_Bilger=this_set['f_Bilger']
+            this_f_Bilger = this_set['f_Bilger']
 
             # CRITERIA TO REMOVE UNNECESSARY ENTRIES WHERE T IS AT T=300
             if this_T > remove_T_below:
@@ -195,7 +197,7 @@ class Cantera_ODE_TNF(object):
     #     self.data_integrated=self.data_integrated_dd.sample(frac=1).reset_index(drop=True).compute()
     #     print('shuffel is done ...')
 
-    def write_hdf(self,nameDB):
+    def write_hdf(self,nameDB,key='TNF_integrated'):
 
         # remove zero T values
         self.data_integrated = self.data_integrated[self.data_integrated['T']>0]
@@ -215,7 +217,7 @@ class Cantera_ODE_TNF(object):
 
         #self.data_integrated.to_hdf(path_or_buf=join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_dt%s' % str(self.dt)))
 
-        path_name = join('/home/max/HDD2_Data/OF4_Simulations/ANN_Lu19_data/TNF_database','TNF_integrated_sample_dt%s.h5' % str(self.dt))
+        path_name = join(self.path,nameDB+'_dt%s.h5' % str(self.dt))
         self.data_integrated.to_hdf(path_or_buf=path_name,key=key,format='table')
 
 '''
